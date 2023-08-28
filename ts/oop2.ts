@@ -72,7 +72,7 @@ class MedicalStaff extends Person {
 class Doctor extends MedicalStaff {
   specialization: string;
   #doctorID: string;
-  availability: { [key: string]: { [key: string]: boolean } };
+  availability: { [key: string]:  false|{ [key: string]: boolean } };
   range: { min: number; max: number };
   constructor(
     firstName: string,
@@ -81,7 +81,7 @@ class Doctor extends MedicalStaff {
     doctorID: string,
     age: number,
     address: string,
-    availability: { [key: string]: { [key: string]: boolean } },
+    availability: { [key: string]: false|{ [key: string]: boolean } },
     staffID: string,
     position: string,
     department: string,
@@ -223,6 +223,7 @@ class Hospital {
     const doctor = this.doctors.find((doctor) => doctor.getID() === doctorID);
     if (!doctor) return;
     const day = doctor.availability[date];
+    if (!day) return;
     const arr = Object.keys(day);
     const available = arr.filter((key) => day[key] === false);
     return available;
@@ -231,6 +232,7 @@ class Hospital {
     const doctor = this.doctors.find((doctor) => doctor.getID() === doctorID);
     if (!doctor) return;
     const day = doctor.availability[date];
+    if (!day) return;
     const arr = Object.keys(day);
     const available = arr.filter((key) => day[key] === true);
     return available;
@@ -241,20 +243,10 @@ class Hospital {
     const doctor = this.doctors.find((doctor) => doctor.getID() === doctorID);
     if (!doctor) return;
     const day = doctor.availability[date];
-    if(!day) return
-    const arr = Object.keys(day);
-    const available = arr.find((key) => key === time && day[key] === true);
-    if (!available) return;
-    if (
-      appointment.patient.age > doctor.range.max ||
-      appointment.patient.age < doctor.range.min
-    )
-      return;
-    this.appointments.push(appointment);
-    arr.map((key) => {
-      if (key === time) day[key] = false;
-      return this
-    });
+    if (!day||!day[time]||appointment.patient.age > doctor.range.max ||
+        appointment.patient.age < doctor.range.min) return;
+      this.appointments.push(appointment);
+      day[time] = false
   }
 }
 
@@ -407,4 +399,3 @@ hospital.logAppointmentsByDoctorID("dfg%%%^");
 hospital.logAppointmentsByPatientID("p67890");
 console.log("in app");
 console.log(result);
-
